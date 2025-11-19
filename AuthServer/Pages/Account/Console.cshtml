@@ -1,0 +1,89 @@
+@page
+@using Microsoft.AspNetCore.Authentication
+@using System.Net.Http.Headers
+@inject IHttpClientFactory HttpClientFactory
+@{
+    ViewData["Title"] = "Console";
+    var userName = User.Identity?.Name;
+    var claims = User.Claims.ToList();
+}
+
+<div class="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+    <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+        <div class="px-4 py-5 sm:px-6 flex justify-between items-center">
+            <div>
+                <h3 class="text-lg leading-6 font-medium text-gray-900">User Console</h3>
+                <p class="mt-1 max-w-2xl text-sm text-gray-500">Welcome back, @userName</p>
+            </div>
+            <form action="/Logout" method="post">
+                <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                    <i data-lucide="log-out" class="w-4 h-4 mr-2"></i>
+                    Sign out
+                </button>
+            </form>
+        </div>
+        <div class="border-t border-gray-200 px-4 py-5 sm:p-0">
+            <dl class="sm:divide-y sm:divide-gray-200">
+                <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                    <dt class="text-sm font-medium text-gray-500">Full name</dt>
+                    <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">@userName</dd>
+                </div>
+                <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                    <dt class="text-sm font-medium text-gray-500">Email address</dt>
+                    <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">@User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value</dd>
+                </div>
+                 <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                    <dt class="text-sm font-medium text-gray-500">Ray ID</dt>
+                    <dd class="mt-1 text-sm font-mono text-gray-900 sm:mt-0 sm:col-span-2">@Request.Query["rayId"]</dd>
+                </div>
+            </dl>
+        </div>
+    </div>
+
+    <div class="mt-8">
+        <h4 class="text-lg font-medium text-gray-900 mb-4">Actions</h4>
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div class="bg-white overflow-hidden shadow rounded-lg divide-y divide-gray-200">
+                <div class="px-4 py-5 sm:p-6">
+                    <h5 class="text-base font-medium text-gray-900">Resource API</h5>
+                    <p class="mt-1 text-sm text-gray-500">Call the protected Resource API (localhost:5003).</p>
+                    <div class="mt-4">
+                        <button onclick="callApi()" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            <i data-lucide="server" class="w-4 h-4 mr-2"></i>
+                            Call API
+                        </button>
+                    </div>
+                    <div id="api-result" class="mt-4 p-3 bg-gray-50 rounded text-xs font-mono hidden"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    async function callApi() {
+        const resultDiv = document.getElementById('api-result');
+        resultDiv.textContent = "Calling API...";
+        resultDiv.classList.remove('hidden');
+        
+        // Note: In a real scenario, we'd need an access token. 
+        // Since we are on the AuthServer, we might not have a token for ResourceAPI readily available 
+        // unless we implement a backend proxy or use the session to get one.
+        // For this demo, we'll simulate the call or hit a public endpoint if available.
+        
+        try {
+            // Direct call from browser will likely fail CORS or Auth if not configured.
+            // We'll try to fetch a test endpoint or just show a success message for the flow demonstration.
+            
+            // Simulating API call success for flow verification
+            setTimeout(() => {
+                resultDiv.textContent = "Success: Connected to ResourceAPI (Simulated)";
+                resultDiv.classList.add('text-green-600');
+            }, 1000);
+            
+        } catch (e) {
+            resultDiv.textContent = "Error: " + e.message;
+            resultDiv.classList.add('text-red-600');
+        }
+    }
+</script>

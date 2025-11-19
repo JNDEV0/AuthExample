@@ -1,0 +1,31 @@
+:root {
+    --bg-canvas: #ffffff;
+    --fg-primary: #1a1a1a;
+    --border-style: 1px solid #1a1a1a;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg-canvas: #1a1a1a;
+        --fg-primary: #ffffff;
+        --border-style: 1px solid #ffffff;
+    }
+}
+
+body {
+    background-color: var(--bg-canvas);
+    color: var(--fg-primary);
+}
+
+.banner {
+    transform-style: preserve-3d;
+    perspective: 1000px;
+}
+
+.banner-layer {
+    transform: translateZ(var(--layer-depth, 0));
+}
+
+#modal-container {
+    backdrop-filter: blur(10px);
+}

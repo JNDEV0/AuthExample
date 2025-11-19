@@ -1,0 +1,61 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="text-center py-16">
+    <h1 class="text-4xl font-extrabold text-gray-900 sm:text-5xl md:text-6xl tracking-tight">
+        Welcome to <span class="text-blue-600">WebApp</span>
+    </h1>
+    <p class="mt-4 max-w-2xl mx-auto text-xl text-gray-500">
+        A secure, modern application built with ASP.NET Core 8, OpenIddict, and Tailwind CSS.
+    </p>
+    
+    <div class="mt-10 flex justify-center gap-4">
+        @if (User.Identity.IsAuthenticated)
+        {
+            <form asp-controller="Account" asp-action="CallApi" method="post">
+                <button type="submit" class="px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 md:py-4 md:text-lg shadow-lg transition-all">
+                    Call Protected API
+                </button>
+            </form>
+            <a href="/Account/Logout" class="px-8 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 md:py-4 md:text-lg shadow-sm transition-all">
+                Logout
+            </a>
+        }
+        else
+        {
+            <a href="/Account/Login" class="px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 md:py-4 md:text-lg shadow-lg transition-all flex items-center gap-2">
+                <i data-lucide="log-in" class="w-5 h-5"></i>
+                Sign In
+            </a>
+            <a href="/Account/Register" class="px-8 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 md:py-4 md:text-lg shadow-sm transition-all flex items-center gap-2">
+                <i data-lucide="user-plus" class="w-5 h-5"></i>
+                Register
+            </a>
+        }
+    </div>
+
+    <div class="mt-20 grid grid-cols-1 gap-8 sm:grid-cols-3">
+        <div class="p-6 bg-white rounded-xl shadow-sm border border-gray-100">
+            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-4 text-blue-600">
+                <i data-lucide="shield-check" class="w-6 h-6"></i>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900">Secure Identity</h3>
+            <p class="mt-2 text-base text-gray-500">Powered by OpenIddict and ASP.NET Core Identity for robust security.</p>
+        </div>
+        <div class="p-6 bg-white rounded-xl shadow-sm border border-gray-100">
+            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-4 text-purple-600">
+                <i data-lucide="zap" class="w-6 h-6"></i>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900">Fast Performance</h3>
+            <p class="mt-2 text-base text-gray-500">Optimized for speed with minimal APIs and efficient resource handling.</p>
+        </div>
+        <div class="p-6 bg-white rounded-xl shadow-sm border border-gray-100">
+            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-4 text-green-600">
+                <i data-lucide="layout" class="w-6 h-6"></i>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900">Modern UI</h3>
+            <p class="mt-2 text-base text-gray-500">Beautifully styled with Tailwind CSS and Lucide icons.</p>
+        </div>
+    </div>
+</div>

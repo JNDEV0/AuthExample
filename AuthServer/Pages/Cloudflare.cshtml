@@ -1,0 +1,68 @@
+@page
+@{
+    ViewData["Title"] = "Security Check";
+    var returnUrl = Request.Query["returnUrl"].ToString();
+}
+
+<div class="min-h-screen bg-white flex flex-col items-center justify-center p-4 text-gray-800 font-sans">
+    <div class="max-w-md w-full space-y-8">
+        <div class="flex items-center gap-3">
+            <h1 class="text-3xl font-semibold">WebApp</h1>
+        </div>
+        
+        <div class="border border-gray-200 bg-gray-50 p-6 rounded-lg shadow-sm">
+            <h2 class="text-xl font-medium mb-4">Verify you are human</h2>
+            
+            <div id="verify-box" class="flex items-center justify-between bg-white border border-gray-300 rounded p-4 h-16 cursor-pointer hover:bg-gray-50 transition-colors" onclick="startVerification()">
+                <div class="flex items-center gap-3">
+                    <div id="status-waiting" class="w-6 h-6 border-2 border-gray-300 rounded bg-white"></div>
+                    <i id="status-verifying" data-lucide="loader-2" class="w-6 h-6 text-blue-600 animate-spin hidden"></i>
+                    <div id="status-success" class="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center hidden">
+                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                    </div>
+                    <span class="text-sm font-medium text-gray-700">Verify you are human</span>
+                </div>
+                <div class="flex flex-col items-end">
+                    <i data-lucide="shield-check" class="w-8 h-8 text-gray-400"></i>
+                </div>
+            </div>
+            <p class="text-xs text-gray-500 mt-2 text-center">
+                This checks if the request is coming from a bot or a malicious script.
+            </p>
+        </div>
+
+        <div class="text-center space-y-1">
+            <p class="text-xs text-gray-400">Ray ID: <span class="font-mono" id="ray-id"></span></p>
+            <p class="text-xs text-gray-400">Performance & security by Cloudflare</p>
+        </div>
+    </div>
+</div>
+
+<form id="verify-form" action="/verify-turnstile?returnUrl=@Uri.EscapeDataString(returnUrl)" method="POST" class="hidden"></form>
+
+<script>
+    // Generate Ray ID
+    const randomHex = Array.from({ length: 16 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
+    document.getElementById('ray-id').textContent = randomHex;
+
+    let status = 'waiting';
+
+    function startVerification() {
+        if (status !== 'waiting') return;
+        
+        status = 'verifying';
+        document.getElementById('status-waiting').classList.add('hidden');
+        document.getElementById('status-verifying').classList.remove('hidden');
+        lucide.createIcons(); // Re-render icons if needed
+
+        setTimeout(() => {
+            status = 'success';
+            document.getElementById('status-verifying').classList.add('hidden');
+            document.getElementById('status-success').classList.remove('hidden');
+            
+            setTimeout(() => {
+                document.getElementById('verify-form').submit();
+            }, 800);
+        }, 1500);
+    }
+</script>

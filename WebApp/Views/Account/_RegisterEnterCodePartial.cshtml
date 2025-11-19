@@ -1,0 +1,12 @@
+@model string
+
+<form hx-post="https://localhost:5001/api/auth/register-verify" hx-trigger="submit">
+    <input type="hidden" name="email" value="@ViewData["Email"]" />
+    <input type="hidden" name="registrationChallengeToken" value="@Model" />
+    <div>
+        <label for="code">Enter Code</label>
+        <input type="text" id="code" name="code" required />
+    </div>
+    <button type="submit">Verify</button>
+</form>
+<a href="#">Did not receive code? Re-send</a>

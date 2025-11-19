@@ -1,0 +1,453 @@
+    ViewData["Title"] = "Sign In";
+    var returnUrl = Request.Query["returnUrl"].ToString() ?? "";
+    var rayId = Request.Query["rayId"].ToString() ?? "";
+}
+
+<div class="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-4 font-sans">
+    
+    <!-- STAGE: LOGIN IDENTIFY -->
+    <div id="stage-login-identify" class="w-full max-w-md">
+        <div class="bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden p-8">
+            <div class="mb-6 text-center">
+                <h2 class="text-2xl font-bold text-gray-900">Sign in</h2>
+                <div class="mt-2 text-sm text-gray-600">
+                    <a href="#" onclick="event.preventDefault(); setStage('register-details');" class="font-medium text-blue-600 hover:text-blue-500">
+                        No account? Register
+                    </a>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-3">
+                    <button onclick="handleSocialLogin('google')" class="flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm bg-white hover:bg-gray-50 transition text-sm font-medium text-gray-700">
+                        <svg class="h-5 w-5 mr-2" aria-hidden="true" viewBox="0 0 24 24"><path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z" fill="currentColor" /></svg>
+                        Google
+                    </button>
+                    <button onclick="handleSocialLogin('github')" class="flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm bg-white hover:bg-gray-50 transition text-sm font-medium text-gray-700">
+                        <i data-lucide="github" class="h-5 w-5 mr-2"></i>
+                        GitHub
+                    </button>
+                </div>
+
+                <div class="relative">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-gray-300"></div>
+                    </div>
+                    <div class="relative flex justify-center text-sm">
+                        <span class="px-2 bg-white text-gray-500">OR</span>
+                    </div>
+                </div>
+
+                <form onsubmit="event.preventDefault(); handleCheckEmail();">
+                    <div class="space-y-1.5">
+                        <label for="email" class="block text-sm font-medium text-gray-700">Email address</label>
+                        <input type="email" id="email" class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all" placeholder="name@example.com" required oninput="state.email = this.value">
+                        <p id="error-email" class="text-xs text-red-600 hidden"></p>
+                    </div>
+                    <button type="submit" id="btn-check-email" class="w-full py-2.5 px-4 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg mt-4">
+                        <i data-lucide="loader-2" class="w-4 h-4 animate-spin hidden loading-icon"></i>
+                        <span>Continue</span>
+                    </button>
+                </form>
+                
+                <div class="text-xs text-gray-400 text-center mt-4">
+                    Protected by AuthServer Identity
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- STAGE: LOGIN PASSWORD -->
+    <div id="stage-login-password" class="w-full max-w-md hidden">
+        <div class="bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden p-8 relative">
+            <button onclick="setStage('login-identify')" class="absolute top-4 left-4 text-gray-400 hover:text-gray-600">
+                <i data-lucide="arrow-left" class="w-5 h-5"></i>
+            </button>
+            
+            <div class="mb-6 text-center">
+                <h2 class="text-2xl font-bold text-gray-900">Welcome back</h2>
+                <p class="text-gray-500 mt-1" id="display-email-login"></p>
+                <a href="#" onclick="event.preventDefault(); setStage('register-details');" class="text-xs text-blue-600 hover:text-blue-500 mt-1 inline-block">
+                    Switch to Registration
+                </a>
+            </div>
+
+            <form onsubmit="event.preventDefault(); handleLogin();" class="space-y-4">
+                <div class="space-y-1.5">
+                    <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+                    <input type="password" id="password" class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all" placeholder="••••••••" oninput="state.password = this.value">
+                    <p id="error-password" class="text-xs text-red-600 hidden"></p>
+                </div>
+                
+                <div class="flex items-center justify-between text-sm">
+                    <span class="text-gray-400 text-xs font-mono bg-gray-100 px-2 py-1 rounded">
+                        Key: <span id="display-challenge"></span>...
+                    </span>
+                    <a href="#" class="text-blue-600 hover:text-blue-500">Forgot password?</a>
+                </div>
+
+                <button type="submit" id="btn-login" class="w-full py-2.5 px-4 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg">
+                    <i data-lucide="loader-2" class="w-4 h-4 animate-spin hidden loading-icon"></i>
+                    <span>Sign In</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- STAGE: REGISTER DETAILS -->
+    <div id="stage-register-details" class="w-full max-w-md hidden">
+        <div class="bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden p-8 relative">
+            <button onclick="setStage('login-identify')" class="absolute top-4 left-4 text-gray-400 hover:text-gray-600">
+                <i data-lucide="arrow-left" class="w-5 h-5"></i>
+            </button>
+            
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-gray-900">Create account</h2>
+                <p class="text-sm text-gray-500 mt-1">Step 1 of 3</p>
+            </div>
+
+            <form onsubmit="event.preventDefault(); handleRegisterDetailsSubmit();" class="space-y-4">
+                <div class="space-y-1.5">
+                    <label for="reg-email" class="block text-sm font-medium text-gray-700">Email address</label>
+                    <input type="email" id="reg-email" class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all" required oninput="state.email = this.value">
+                </div>
+                
+                <div class="space-y-1.5">
+                    <label for="reg-dob" class="block text-sm font-medium text-gray-700">Date of Birth</label>
+                    <input type="date" id="reg-dob" class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all" required oninput="state.dob = this.value">
+                </div>
+
+                <div class="flex items-start gap-3 pt-2">
+                    <input type="checkbox" id="terms" class="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" onchange="state.terms = this.checked">
+                    <label for="terms" class="text-sm text-gray-600">
+                        I accept the Terms of Service and Privacy Policy.
+                    </label>
+                </div>
+
+                <button type="submit" id="btn-register-details" class="w-full py-2.5 px-4 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">
+                    <i data-lucide="loader-2" class="w-4 h-4 animate-spin hidden loading-icon"></i>
+                    <span>Continue</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- STAGE: REGISTER VERIFY -->
+    <div id="stage-register-verify" class="w-full max-w-md hidden">
+        <div class="bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden p-8">
+            <div class="mb-6 text-center">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 mb-4">
+                    <i data-lucide="mail" class="h-6 w-6 text-blue-600"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-900">Check your email</h2>
+                <p class="text-sm text-gray-500 mt-2">
+                    We sent a confirmation code to <span class="font-medium text-gray-900" id="display-email-verify"></span>.
+                </p>
+            </div>
+
+            <div class="bg-amber-50 border border-amber-200 rounded-md p-3 mb-6 flex items-start gap-2">
+                <i data-lucide="alert-circle" class="w-4 h-4 text-amber-600 mt-0.5 shrink-0"></i>
+                <p class="text-xs text-amber-800">
+                    Demo: Enter code <strong>123456</strong> to proceed.
+                </p>
+            </div>
+
+            <form onsubmit="event.preventDefault(); handleVerifyCode();" class="space-y-4">
+                <div class="space-y-1.5">
+                    <label for="code" class="block text-sm font-medium text-gray-700">Confirmation Code</label>
+                    <input type="text" id="code" class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-center text-2xl tracking-widest font-mono" placeholder="123456" maxlength="6" oninput="state.verifyCode = this.value">
+                    <p id="error-code" class="text-xs text-red-600 hidden"></p>
+                </div>
+
+                <button type="submit" id="btn-verify-code" class="w-full py-2.5 px-4 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg">
+                    <i data-lucide="loader-2" class="w-4 h-4 animate-spin hidden loading-icon"></i>
+                    <span>Verify Email</span>
+                </button>
+            </form>
+            
+            <div class="mt-4 text-center">
+                <button class="text-sm text-blue-600 hover:underline">Did not receive code? Re-send</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- STAGE: REGISTER SET PASSWORD -->
+    <div id="stage-register-set-password" class="w-full max-w-md hidden">
+        <div class="bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden p-8">
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-gray-900">Set Password</h2>
+                <p class="text-sm text-gray-500 mt-1" id="display-email-setpass"></p>
+            </div>
+
+            <form onsubmit="event.preventDefault(); handleRegisterFinalize();" class="space-y-4">
+                <div class="space-y-1.5">
+                    <label for="new-password" class="block text-sm font-medium text-gray-700">New Password</label>
+                    <input type="password" id="new-password" class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all" oninput="state.password = this.value">
+                </div>
+                <div class="space-y-1.5">
+                    <label for="confirm-password" class="block text-sm font-medium text-gray-700">Confirm Password</label>
+                    <input type="password" id="confirm-password" class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all" oninput="state.confirmPassword = this.value">
+                    <p id="error-set-password" class="text-xs text-red-600 hidden"></p>
+                </div>
+
+                <div class="bg-gray-50 p-3 rounded text-xs text-gray-500 space-y-1">
+                    <p class="flex items-center gap-2">
+                        <i data-lucide="shield-check" class="w-3 h-3"></i> At least 6 characters
+                    </p>
+                    <p class="flex items-center gap-2">
+                        <i data-lucide="shield-check" class="w-3 h-3"></i> Passwords match
+                    </p>
+                </div>
+
+                <button type="submit" id="btn-register-finalize" class="w-full py-2.5 px-4 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg">
+                    <i data-lucide="loader-2" class="w-4 h-4 animate-spin hidden loading-icon"></i>
+                    <span>Create Account</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    const state = {
+        email: '',
+        password: '',
+        dob: '',
+        terms: false,
+        verifyCode: '',
+        confirmPassword: '',
+        challengeToken: '',
+        registrationToken: '',
+        passwordChallengeToken: ''
+    };
+
+    const stages = [
+        'login-identify',
+        'login-password',
+        'register-details',
+        'register-verify',
+        'register-set-password'
+    ];
+
+    function setStage(stageId) {
+        stages.forEach(id => {
+            const el = document.getElementById('stage-' + id);
+            if (el) el.classList.add('hidden');
+        });
+        document.getElementById('stage-' + stageId).classList.remove('hidden');
+        
+        // Update displays
+        if (state.email) {
+            ['display-email-login', 'display-email-verify', 'display-email-setpass'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = state.email;
+            });
+        }
+        
+        lucide.createIcons();
+    }
+
+    function setLoading(btnId, isLoading) {
+        const btn = document.getElementById(btnId);
+        const icon = btn.querySelector('.loading-icon');
+        if (isLoading) {
+            btn.disabled = true;
+            icon.classList.remove('hidden');
+        } else {
+            btn.disabled = false;
+            icon.classList.add('hidden');
+        }
+    }
+
+    function showError(id, message) {
+        const el = document.getElementById(id);
+        if (message) {
+            el.textContent = message;
+            el.classList.remove('hidden');
+        } else {
+            el.classList.add('hidden');
+        }
+    }
+
+    async function handleCheckEmail() {
+        if (!state.email.includes('@@')) {
+            showError('error-email', "Please enter a valid email address.");
+            return;
+        }
+        showError('error-email', null);
+        setLoading('btn-check-email', true);
+
+        try {
+            const response = await fetch('/api/auth/check-email', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: state.email })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                state.challengeToken = data.token;
+                document.getElementById('display-challenge').textContent = data.token.substring(0, 8);
+                setStage('login-password');
+            } else {
+                // Assume user not found, prompt to register (or handle as per requirement)
+                 showError('error-email', "Account not found. Please register.");
+            }
+        } catch (e) {
+            console.error(e);
+            showError('error-email', "An error occurred.");
+        } finally {
+            setLoading('btn-check-email', false);
+        }
+    }
+
+    async function handleLogin() {
+        setLoading('btn-login', true);
+        showError('error-password', null);
+
+        try {
+            const response = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    email: state.email, 
+                    password: state.password, 
+                    challengeToken: state.challengeToken 
+                })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                // Use the returnUrl from query string if available, else use the one from API
+                const urlParams = new URLSearchParams(window.location.search);
+                const returnUrl = urlParams.get('returnUrl');
+                const rayId = urlParams.get('rayId');
+                
+                let finalUrl = returnUrl || data.redirectUrl;
+                if (finalUrl && rayId && finalUrl.includes('?')) {
+                    finalUrl += `&rayId=${rayId}`;
+                } else if (finalUrl && rayId) {
+                    finalUrl += `?rayId=${rayId}`;
+                }
+                
+                window.location.href = finalUrl;
+            } else {
+                showError('error-password', "Login failed.");
+            }
+        } catch (e) {
+            showError('error-password', "Login failed.");
+        } finally {
+            setLoading('btn-login', false);
+        }
+    }
+
+    async function handleRegisterDetailsSubmit() {
+        if (!state.email || !state.dob || !state.terms) return;
+        setLoading('btn-register-details', true);
+
+        try {
+            const response = await fetch('/api/auth/register-start', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    email: state.email, 
+                    dateOfBirth: state.dob, 
+                    termsAccepted: state.terms 
+                })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                state.registrationToken = data.token;
+                setStage('register-verify');
+            }
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setLoading('btn-register-details', false);
+        }
+    }
+
+    async function handleVerifyCode() {
+        setLoading('btn-verify-code', true);
+        showError('error-code', null);
+
+        try {
+            const response = await fetch('/api/auth/register-verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    email: state.email, 
+                    code: state.verifyCode, 
+                    registrationChallengeToken: state.registrationToken 
+                })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                state.passwordChallengeToken = data.token;
+                setStage('register-set-password');
+            } else {
+                showError('error-code', "Invalid confirmation code.");
+            }
+        } catch (e) {
+            showError('error-code', "Verification failed.");
+        } finally {
+            setLoading('btn-verify-code', false);
+        }
+    }
+
+    async function handleRegisterFinalize() {
+        if (state.password !== state.confirmPassword) {
+            showError('error-set-password', "Passwords do not match");
+            return;
+        }
+        if (state.password.length < 6) {
+            showError('error-set-password', "Password too short");
+            return;
+        }
+
+        setLoading('btn-register-finalize', true);
+        
+        try {
+            const response = await fetch('/api/auth/register-create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    email: state.email, 
+                    password: state.password, 
+                    confirmPassword: state.confirmPassword,
+                    passwordChallengeToken: state.passwordChallengeToken
+                })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                const urlParams = new URLSearchParams(window.location.search);
+                const returnUrl = urlParams.get('returnUrl');
+                const rayId = urlParams.get('rayId');
+                
+                let finalUrl = returnUrl || data.redirectUrl;
+                if (finalUrl && rayId && finalUrl.includes('?')) {
+                    finalUrl += `&rayId=${rayId}`;
+                } else if (finalUrl && rayId) {
+                    finalUrl += `?rayId=${rayId}`;
+                }
+                
+                window.location.href = finalUrl;
+            } else {
+                showError('error-set-password', "Registration failed.");
+            }
+        } catch (e) {
+            showError('error-set-password', "Error creating account.");
+        } finally {
+            setLoading('btn-register-finalize', false);
+        }
+    }
+
+    function handleSocialLogin(provider) {
+        // Implement social login redirect
+        alert('Social login not fully implemented in this demo step.');
+    }
+</script>
