@@ -1,15 +1,42 @@
 using Carter;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("default", policy =>
     {
-        options.Authority = "https://localhost:5001";
-        options.Audience = "resource_api";
+        policy.WithOrigins("https://localhost:5002")
+            .AllowAnyHeader()
+            .AllowAnyMethod();
     });
+});
+
+// Add services to the container.
+builder.Services.AddOpenIddict()
+    .AddValidation(options =>
+    {
+        options.SetIssuer("https://localhost:5001");
+        options.AddAudiences("resource_server");
+
+        // Configure the validation handler to use introspection and register the client
+        // credentials used when communicating with the remote introspection endpoint.
+        options.UseIntrospection()
+               .SetClientId("resource_server")
+               .SetClientSecret("resource_server-secret");
+
+        // Register the System.Net.Http integration.
+        options.UseSystemNetHttp();
+
+        // Register the ASP.NET Core host.
+        options.UseAspNetCore();
+    });
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = OpenIddict.Validation.AspNetCore.OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = OpenIddict.Validation.AspNetCore.OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme;
+});
 
 builder.Services.AddAuthorization(options =>
 {
@@ -34,6 +61,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors("default");
 
 app.UseAuthentication();
 app.UseAuthorization();

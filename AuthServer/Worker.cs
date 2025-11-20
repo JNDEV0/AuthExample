@@ -67,6 +67,19 @@ public class Worker : IHostedService
                 }
             });
         }
+
+        if (await manager.FindByClientIdAsync("resource_server") is null)
+        {
+            await manager.CreateAsync(new OpenIddictApplicationDescriptor
+            {
+                ClientId = "resource_server",
+                ClientSecret = "resource_server-secret",
+                Permissions =
+                {
+                    OpenIddictConstants.Permissions.Endpoints.Introspection
+                }
+            });
+        }
     }
 
     public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;

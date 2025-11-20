@@ -78,6 +78,7 @@ public class AccountController : Controller
     }
 
     [Microsoft.AspNetCore.Authorization.Authorize]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public async Task<IActionResult> Console()
     {
         var accessToken = await HttpContext.GetTokenAsync("access_token");

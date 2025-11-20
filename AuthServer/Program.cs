@@ -6,8 +6,10 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Quartz;
 using AuthServer;
+using OpenIddict.Server;
 
 var builder = WebApplication.CreateBuilder(args);
+var logger = builder.Services.BuildServiceProvider().GetRequiredService<ILoggerFactory>().CreateLogger<Program>();
 
 // Add services to the container.
 builder.Services.AddHttpClient();
@@ -83,7 +85,8 @@ builder.Services.AddOpenIddict()
         options.SetAuthorizationEndpointUris("connect/authorize")
                .SetLogoutEndpointUris("connect/logout")
                .SetTokenEndpointUris("connect/token")
-               .SetUserinfoEndpointUris("connect/userinfo");
+               .SetUserinfoEndpointUris("connect/userinfo")
+                .SetIntrospectionEndpointUris("connect/introspect");
 
         // Mark the "email", "profile" and "roles" scopes as supported scopes.
         options.RegisterScopes("email", "profile", "roles", "resource_api");
@@ -104,6 +107,18 @@ builder.Services.AddOpenIddict()
                .EnableStatusCodePagesIntegration()
                .EnableAuthorizationEndpointPassthrough()
                .EnableLogoutEndpointPassthrough();
+
+        options.AddEventHandler<OpenIddict.Server.OpenIddictServerEvents.ProcessSignInContext>(builder =>
+        {
+            builder.UseInlineHandler(context =>
+            {
+                foreach (var claim in context.Principal.Claims)
+                {
+                    logger.LogInformation("Claim: {Type} = {Value}", claim.Type, claim.Value);
+                }
+                return default;
+            });
+        });
     })
     // Register the OpenIddict validation components.
     .AddValidation(options =>
