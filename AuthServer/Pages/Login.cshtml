@@ -1,3 +1,5 @@
+@page
+@{
     ViewData["Title"] = "Sign In";
     var returnUrl = Request.Query["returnUrl"].ToString() ?? "";
     var rayId = Request.Query["rayId"].ToString() ?? "";
@@ -101,34 +103,61 @@
                 <i data-lucide="arrow-left" class="w-5 h-5"></i>
             </button>
             
-            <div class="mb-6">
-                <h2 class="text-2xl font-bold text-gray-900">Create account</h2>
+            <div class="mb-6 text-center">
+                <h2 class="text-2xl font-bold text-gray-900">Register account</h2>
                 <p class="text-sm text-gray-500 mt-1">Step 1 of 3</p>
+                <div class="mt-2 text-sm text-gray-600">
+                    <a href="#" onclick="event.preventDefault(); setStage('login-identify');" class="font-medium text-blue-600 hover:text-blue-500">
+                        Already registered? Login
+                    </a>
+                </div>
             </div>
 
-            <form onsubmit="event.preventDefault(); handleRegisterDetailsSubmit();" class="space-y-4">
-                <div class="space-y-1.5">
-                    <label for="reg-email" class="block text-sm font-medium text-gray-700">Email address</label>
-                    <input type="email" id="reg-email" class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all" required oninput="state.email = this.value">
-                </div>
-                
-                <div class="space-y-1.5">
-                    <label for="reg-dob" class="block text-sm font-medium text-gray-700">Date of Birth</label>
-                    <input type="date" id="reg-dob" class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all" required oninput="state.dob = this.value">
-                </div>
-
-                <div class="flex items-start gap-3 pt-2">
-                    <input type="checkbox" id="terms" class="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" onchange="state.terms = this.checked">
-                    <label for="terms" class="text-sm text-gray-600">
-                        I accept the Terms of Service and Privacy Policy.
-                    </label>
+            <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-3">
+                    <button onclick="handleSocialLogin('google')" class="flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm bg-white hover:bg-gray-50 transition text-sm font-medium text-gray-700">
+                        <svg class="h-5 w-5 mr-2" aria-hidden="true" viewBox="0 0 24 24"><path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z" fill="currentColor" /></svg>
+                        Google
+                    </button>
+                    <button onclick="handleSocialLogin('github')" class="flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm bg-white hover:bg-gray-50 transition text-sm font-medium text-gray-700">
+                        <i data-lucide="github" class="h-5 w-5 mr-2"></i>
+                        GitHub
+                    </button>
                 </div>
 
-                <button type="submit" id="btn-register-details" class="w-full py-2.5 px-4 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">
-                    <i data-lucide="loader-2" class="w-4 h-4 animate-spin hidden loading-icon"></i>
-                    <span>Continue</span>
-                </button>
-            </form>
+                <div class="relative">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-gray-300"></div>
+                    </div>
+                    <div class="relative flex justify-center text-sm">
+                        <span class="px-2 bg-white text-gray-500">OR</span>
+                    </div>
+                </div>
+
+                <form onsubmit="event.preventDefault(); handleRegisterDetailsSubmit();" class="space-y-4">
+                    <div class="space-y-1.5">
+                        <label for="reg-email" class="block text-sm font-medium text-gray-700">Email address</label>
+                        <input type="email" id="reg-email" class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all" required oninput="state.email = this.value">
+                    </div>
+                    
+                    <div class="space-y-1.5">
+                        <label for="reg-dob" class="block text-sm font-medium text-gray-700">Date of Birth</label>
+                        <input type="date" id="reg-dob" class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all" required oninput="state.dob = this.value">
+                    </div>
+
+                    <div class="flex items-start gap-3 pt-2">
+                        <input type="checkbox" id="terms" class="mt-1 h-4 w-4 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 border-gray-300 rounded" onchange="state.terms = this.checked">
+                        <label for="terms" class="text-sm text-gray-600">
+                            I accept the Terms of Service and Privacy Policy.
+                        </label>
+                    </div>
+
+                    <button type="submit" id="btn-register-details" class="w-full py-2.5 px-4 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">
+                        <i data-lucide="loader-2" class="w-4 h-4 animate-spin hidden loading-icon"></i>
+                        <span>Continue</span>
+                    </button>
+                </form>
+            </div>
         </div>
     </div>
 
@@ -319,17 +348,10 @@
 
             if (response.ok) {
                 const data = await response.json();
-                // Use the returnUrl from query string if available, else use the one from API
                 const urlParams = new URLSearchParams(window.location.search);
                 const returnUrl = urlParams.get('returnUrl');
-                const rayId = urlParams.get('rayId');
                 
                 let finalUrl = returnUrl || data.redirectUrl;
-                if (finalUrl && rayId && finalUrl.includes('?')) {
-                    finalUrl += `&rayId=${rayId}`;
-                } else if (finalUrl && rayId) {
-                    finalUrl += `?rayId=${rayId}`;
-                }
                 
                 window.location.href = finalUrl;
             } else {
@@ -426,14 +448,8 @@
                 const data = await response.json();
                 const urlParams = new URLSearchParams(window.location.search);
                 const returnUrl = urlParams.get('returnUrl');
-                const rayId = urlParams.get('rayId');
                 
                 let finalUrl = returnUrl || data.redirectUrl;
-                if (finalUrl && rayId && finalUrl.includes('?')) {
-                    finalUrl += `&rayId=${rayId}`;
-                } else if (finalUrl && rayId) {
-                    finalUrl += `?rayId=${rayId}`;
-                }
                 
                 window.location.href = finalUrl;
             } else {
@@ -450,4 +466,15 @@
         // Implement social login redirect
         alert('Social login not fully implemented in this demo step.');
     }
+
+    function init() {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('nextAction') === 'Register') {
+            setStage('register-details');
+        } else {
+            setStage('login-identify'); // Default to login if no specific action
+        }
+        lucide.createIcons();
+    }
+    init();
 </script>

@@ -1,0 +1,18 @@
+@{
+    ViewData["Title"] = "Log out";
+}
+
+<div class="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-4 font-sans">
+    <div class="w-full max-w-md bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden p-8">
+        <div class="text-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-900">Log out</h2>
+            <p class="text-gray-500 mt-2">Are you sure you want to sign out?</p>
+        </div>
+
+        <form asp-action="LogoutPost" asp-controller="Authorization" method="post">
+            <button type="submit" class="w-full py-2.5 px-4 rounded-lg font-medium transition-all duration-200 bg-red-600 hover:bg-red-700 text-white shadow-md hover:shadow-lg">
+                Yes, Sign Out
+            </button>
+        </form>
+    </div>
+</div>

@@ -77,6 +77,15 @@ public class AccountController : Controller
         return Ok(content);
     }
 
+    [Microsoft.AspNetCore.Authorization.Authorize]
+    public async Task<IActionResult> Console()
+    {
+        var accessToken = await HttpContext.GetTokenAsync("access_token");
+        ViewData["AccessToken"] = accessToken;
+
+        return View();
+    }
+
     public IActionResult Logout()
     {
         return SignOut(CookieAuthenticationDefaults.AuthenticationScheme, OpenIdConnectDefaults.AuthenticationScheme);

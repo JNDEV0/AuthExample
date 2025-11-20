@@ -11,28 +11,7 @@
     </p>
     
     <div class="mt-10 flex justify-center gap-4">
-        @if (User.Identity.IsAuthenticated)
-        {
-            <form asp-controller="Account" asp-action="CallApi" method="post">
-                <button type="submit" class="px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 md:py-4 md:text-lg shadow-lg transition-all">
-                    Call Protected API
-                </button>
-            </form>
-            <a href="/Account/Logout" class="px-8 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 md:py-4 md:text-lg shadow-sm transition-all">
-                Logout
-            </a>
-        }
-        else
-        {
-            <a href="/Account/Login" class="px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 md:py-4 md:text-lg shadow-lg transition-all flex items-center gap-2">
-                <i data-lucide="log-in" class="w-5 h-5"></i>
-                Sign In
-            </a>
-            <a href="/Account/Register" class="px-8 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 md:py-4 md:text-lg shadow-sm transition-all flex items-center gap-2">
-                <i data-lucide="user-plus" class="w-5 h-5"></i>
-                Register
-            </a>
-        }
+        
     </div>
 
     <div class="mt-20 grid grid-cols-1 gap-8 sm:grid-cols-3">

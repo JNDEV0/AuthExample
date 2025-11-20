@@ -10,6 +10,7 @@ using AuthServer;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddHttpClient();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
     // Configure the context to use sqlite.
@@ -94,8 +95,6 @@ builder.Services.AddOpenIddict()
         
         options.AllowAuthorizationCodeFlow().RequireProofKeyForCodeExchange();
 
-        options.UseReferenceAccessTokens();
-
         // Register the signing and encryption credentials.
         options.AddDevelopmentEncryptionCertificate()
                .AddDevelopmentSigningCertificate();
@@ -103,7 +102,8 @@ builder.Services.AddOpenIddict()
         // Register the ASP.NET Core host and configure the ASP.NET Core options.
         options.UseAspNetCore()
                .EnableStatusCodePagesIntegration()
-               .EnableAuthorizationEndpointPassthrough();
+               .EnableAuthorizationEndpointPassthrough()
+               .EnableLogoutEndpointPassthrough();
     })
     // Register the OpenIddict validation components.
     .AddValidation(options =>
@@ -122,6 +122,7 @@ builder.Services.AddAuthorization();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddCarter();
+builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages(); // Added Razor Pages services
 
 builder.Services.ConfigureApplicationCookie(options =>
@@ -161,6 +162,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapCarter();
+app.MapControllers();
 app.MapRazorPages(); // Added Razor Pages mapping
 
 app.MapGet("/test", () => "Hello World!");

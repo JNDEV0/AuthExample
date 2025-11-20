@@ -121,6 +121,3 @@ Thumbs.db
 *.db-wal
 *.sqlite
 *.sqlite3
-
-# Exclude the React simulator directory
-net-8-auth-flow-simulator/

@@ -8,7 +8,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
         options.Authority = "https://localhost:5001";
-        options.Audience = "resource_server";
+        options.Audience = "resource_api";
     });
 
 builder.Services.AddAuthorization(options =>

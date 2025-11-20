@@ -1,0 +1,86 @@
+@{
+    ViewData["Title"] = "Console";
+    var accessToken = ViewData["AccessToken"] as string;
+}
+
+<div class="min-h-screen bg-gray-50 p-8">
+    <div class="max-w-4xl mx-auto">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
+            <div class="flex items-center justify-between mb-6">
+                <h1 class="text-2xl font-bold text-gray-900">Account Console</h1>
+            </div>
+            
+            <div class="mb-8">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">User Information</h2>
+                <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                    <dl class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        @{
+                            var userClaims = User.Claims
+                                .Where(c => !c.Type.Contains("schmema.microsoft.com") && !c.Type.Contains("amr"))
+                                .Select(c => new
+                                {
+                                    Type = c.Type switch
+                                    {
+                                        "sub" => "Subject (User ID)",
+                                        "name" => "Name",
+                                        "given_name" => "Given Name",
+                                        "family_name" => "Family Name",
+                                        "email" => "Email",
+                                        "jti" => "JWT ID",
+                                        "iat" => "Issued At",
+                                        "nbf" => "Not Before",
+                                        "exp" => "Expires",
+                                        "aud" => "Audience",
+                                        "iss" => "Issuer",
+                                        "auth_time" => "Authentication Time",
+                                        "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier" => "Name Identifier",
+                                        "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress" => "Email Address",
+                                        "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name" => "Username",
+                                        _ => c.Type
+                                    },
+                                    Value = c.Type == "iat" || c.Type == "nbf" || c.Type == "exp" || c.Type == "auth_time"
+                                            ? DateTimeOffset.FromUnixTimeSeconds(long.Parse(c.Value)).ToLocalTime().ToString()
+                                            : c.Value
+                                });
+
+                            foreach (var claim in userClaims)
+                            {
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500">@claim.Type</dt>
+                                    <dd class="mt-1 text-sm text-gray-900 break-all">@claim.Value</dd>
+                                </div>
+                            }
+                        }
+                    </dl>
+                </div>
+            </div>
+
+            <div>
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">Resource API</h2>
+                <button onclick="callApi()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                    Fetch Protected Data
+                </button>
+                <div id="api-result" class="mt-4 hidden">
+                    <pre class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto text-sm font-mono"></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    async function callApi() {
+        const resultDiv = document.getElementById('api-result');
+        const pre = resultDiv.querySelector('pre');
+        
+        try {
+            const response = await fetch('/Account/CallApi', { method: 'POST' });
+            const text = await response.text();
+            pre.textContent = text;
+            resultDiv.classList.remove('hidden');
+        } catch (e) {
+            pre.textContent = 'Error: ' + e.message;
+            resultDiv.classList.remove('hidden');
+        }
+    }
+</script>

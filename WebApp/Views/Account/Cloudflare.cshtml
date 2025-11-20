@@ -1,35 +1,53 @@
 @{
+    Layout = null;
     ViewData["Title"] = "Security Check";
     var nextAction = ViewData["NextAction"] as string;
 }
 
-<div class="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-4 font-sans">
-    <div class="w-full max-w-md bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden">
-        <div class="p-8">
-            <div class="flex items-center justify-between mb-8">
-                <h2 class="text-2xl font-bold text-gray-900">Verify you are human</h2>
-                <i data-lucide="shield-check" class="w-8 h-8 text-blue-600"></i>
-            </div>
-
-            <div class="bg-gray-50 border border-gray-200 rounded-lg p-6 flex items-center gap-4 mb-6 cursor-pointer hover:bg-gray-100 transition-colors" onclick="startVerification()">
-                <div class="w-8 h-8 rounded border-2 border-gray-300 bg-white flex items-center justify-center" id="checkbox">
-                    <i data-lucide="check" class="w-6 h-6 text-green-500 hidden" id="check-icon"></i>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - WebApp</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            lucide.createIcons();
+        });
+    </script>
+</head>
+<body class="bg-gray-100 font-sans">
+    <div class="min-h-screen flex flex-col items-center justify-center p-4">
+        <div class="w-full max-w-md bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden">
+            <div class="p-8">
+                <div class="flex items-center justify-between mb-8">
+                    <h2 class="text-2xl font-bold text-gray-900">Verify you are human</h2>
+                    <i data-lucide="shield-check" class="w-8 h-8 text-blue-600"></i>
                 </div>
-                <span class="text-sm font-medium text-gray-700 select-none">Verify you are human</span>
-                <div class="ml-auto">
-                    <div class="w-8 h-8 border-4 border-gray-200 border-t-blue-600 rounded-full animate-spin hidden" id="spinner"></div>
+
+                <div class="bg-gray-50 border border-gray-200 rounded-lg p-6 flex items-center gap-4 mb-6 cursor-pointer hover:bg-gray-100 transition-colors" onclick="startVerification()">
+                    <div class="w-8 h-8 rounded border-2 border-gray-300 bg-white flex items-center justify-center" id="checkbox">
+                        <i data-lucide="check" class="w-6 h-6 text-green-500 hidden" id="check-icon"></i>
+                    </div>
+                    <span class="text-sm font-medium text-gray-700 select-none">Verify you are human</span>
+                    <div class="ml-auto">
+                        <div class="w-8 h-8 border-4 border-gray-200 border-t-blue-600 rounded-full animate-spin hidden" id="spinner"></div>
+                    </div>
+                </div>
+
+                <div class="text-center text-xs text-gray-400">
+                    Ray ID: <span class="font-mono">@Guid.NewGuid().ToString().Substring(0, 16)</span>
                 </div>
             </div>
-
-            <div class="text-center text-xs text-gray-400">
-                Ray ID: <span class="font-mono">@Guid.NewGuid().ToString().Substring(0, 16)</span>
+            <div class="bg-gray-50 px-8 py-4 border-t border-gray-100 flex justify-between items-center">
+                <span class="text-xs text-gray-500">Performance & security by Cloudflare</span>
             </div>
-        </div>
-        <div class="bg-gray-50 px-8 py-4 border-t border-gray-100 flex justify-between items-center">
-            <span class="text-xs text-gray-500">Performance & security by Cloudflare</span>
         </div>
     </div>
-</div>
+</body>
+</html>
 
 <form id="verify-form" asp-controller="Account" asp-action="VerifyTurnstile" method="post" class="hidden">
     <input type="hidden" name="nextAction" value="@nextAction" />
@@ -53,8 +71,14 @@
             setTimeout(() => {
                 // Redirect to AuthServer Login with RayID and ReturnUrl
                 const rayId = document.querySelector('.font-mono').innerText;
-                // We redirect to /Account/Console on the AuthServer after login
-                window.location.href = `https://localhost:5001/Login?rayId=${rayId}&returnUrl=/Account/Console`;
+                const nextAction = '@nextAction';
+                
+                let redirectUrl = `https://localhost:5001/Login?rayId=${rayId}&returnUrl=https://localhost:5002/Account/Console`;
+                if (nextAction) {
+                    redirectUrl += `&nextAction=${nextAction}`;
+                }
+                
+                window.location.href = redirectUrl;
             }, 500);
         }, 1500);
     }

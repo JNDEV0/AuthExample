@@ -23,6 +23,19 @@ public class Worker : IHostedService
         await context.Database.EnsureCreatedAsync();
 
         var manager = scope.ServiceProvider.GetRequiredService<IOpenIddictApplicationManager>();
+        var scopeManager = scope.ServiceProvider.GetRequiredService<IOpenIddictScopeManager>();
+
+        if (await scopeManager.FindByNameAsync("resource_api") is null)
+        {
+            await scopeManager.CreateAsync(new OpenIddictScopeDescriptor
+            {
+                Name = "resource_api",
+                Resources =
+                {
+                    "resource_server"
+                }
+            });
+        }
 
         if (await manager.FindByClientIdAsync("web-app") is null)
         {

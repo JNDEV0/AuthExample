@@ -24,6 +24,7 @@ builder.Services.AddAuthentication(options =>
     options.Scope.Add("email");
     options.Scope.Add("resource_api");
     options.SaveTokens = true;
+    options.TokenValidationParameters.NameClaimType = "name";
 });
 
 var app = builder.Build();

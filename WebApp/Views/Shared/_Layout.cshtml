@@ -30,12 +30,25 @@
             <div class="flex items-center gap-4">
                 @if (User.Identity.IsAuthenticated)
                 {
-                    <span class="text-sm text-gray-500">@User.Identity.Name</span>
-                    <a href="/Account/Logout" class="text-sm font-medium text-red-600 hover:text-red-700">Logout</a>
+                    <a href="/Account/Console" class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm flex items-center gap-2">
+                        <i data-lucide="user" class="w-4 h-4"></i>
+                        @User.Identity.Name
+                    </a>
+                    <a href="/Account/Logout" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors shadow-sm flex items-center gap-2">
+                        <i data-lucide="log-out" class="w-4 h-4"></i>
+                        Sign Out
+                    </a>
                 }
                 else
                 {
-                    <a href="/Account/Login" class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm">Sign In</a>
+                    <a href="/Account/Login" class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm flex items-center gap-2">
+                        <i data-lucide="log-in" class="w-4 h-4"></i>
+                        Sign In
+                    </a>
+                    <a href="/Account/Register" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors shadow-sm flex items-center gap-2">
+                        <i data-lucide="user-plus" class="w-4 h-4"></i>
+                        Register
+                    </a>
                 }
             </div>
         </nav>
