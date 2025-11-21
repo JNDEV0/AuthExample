@@ -121,3 +121,14 @@ Thumbs.db
 *.db-wal
 *.sqlite
 *.sqlite3
+# Security
+*.pem
+
+# Local Documentation & Reports
+report1.md
+report2.md
+sample-n8n-on-aws.txt
+sample-n8n-on-aws/
+startPrompt.txt
+jndev0-authexample.txt
+

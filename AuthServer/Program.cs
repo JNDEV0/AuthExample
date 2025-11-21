@@ -7,22 +7,64 @@ using Microsoft.EntityFrameworkCore;
 using Quartz;
 using AuthServer;
 using OpenIddict.Server;
+using StackExchange.Redis;
+using Microsoft.AspNetCore.DataProtection;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// CRITICAL: Enable legacy timestamp behavior.
+// This creates a compatibility bridge for the existing domain model, preventing runtime
+// InvalidCastExceptions regarding DateTime.Kind.
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 var logger = builder.Services.BuildServiceProvider().GetRequiredService<ILoggerFactory>().CreateLogger<Program>();
 
 // Add services to the container.
 builder.Services.AddHttpClient();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
-    // Configure the context to use sqlite.
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"));
+    // The Agent replaces the SQLite configuration with Npgsql.
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+      
+    options.UseNpgsql(connectionString, npgsqlOptions => {
+        // Resiliency Strategy: Enable retry logic.
+        // This is essential for cloud-native apps connecting to Aurora Serverless,
+        // which may experience transient connection drops during auto-scaling events.
+        npgsqlOptions.EnableRetryOnFailure(
+            maxRetryCount: 5,
+            maxRetryDelay: TimeSpan.FromSeconds(30),
+            errorCodesToAdd: null);
+    });
 
-    // Register the entity sets needed by OpenIddict.
-    // Note: use the generic overload if you need
-    // to replace the default OpenIddict entities.
     options.UseOpenIddict();
 });
+
+// Retrieve the Redis connection string.
+// In K8s, this will be injected via Environment Variable from the Secret Store CSI Driver.
+// The connection string format for ElastiCache typically includes the endpoint and SSL.
+var redisConnectionString = builder.Configuration.GetConnectionString("Redis") 
+                           ?? Environment.GetEnvironmentVariable("REDIS_CONNECTION_STRING");
+
+if (!string.IsNullOrEmpty(redisConnectionString))
+{
+    // Establish the connection to ElastiCache
+    var redis = ConnectionMultiplexer.Connect(redisConnectionString);
+      
+    builder.Services.AddDataProtection()
+        // Persist keys to a specific Redis key. 
+        // This acts as the shared repository for the XML key ring.
+       .PersistKeysToStackExchangeRedis(redis, "Net8IdentityEco-DataProtection-Keys")
+          
+        // CRITICAL: Set a unified Application Name.
+        // This ensures that the key derivation logic is identical across both microservices,
+        // allowing them to share cookies and tokens securely.
+       .SetApplicationName("Net8IdentityEco"); 
+}
+else
+{
+    // Fallback for local development (SQLite/Localhost)
+    builder.Services.AddDataProtection()
+       .SetApplicationName("Net8IdentityEco");
+}
 
 // Register the Identity services.
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()

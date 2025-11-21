@@ -1,0 +1,133 @@
+version: '3.8'
+
+name: net8-identity-eco
+
+services:
+  # ==========================================
+  # MOCK INFRASTRUCTURE: Database (Aurora Replica)
+  # ==========================================
+  postgres:
+    image: postgres:16
+    container_name: identity-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: securepassword123!
+      POSTGRES_DB: identity_db
+    ports:
+      - "5432:5432" # Exposed for local IDE inspection (e.g., pgAdmin/DataGrip)
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - identity-eco
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # ==========================================
+  # MOCK INFRASTRUCTURE: Cache (ElastiCache Replica)
+  # ==========================================
+  redis:
+    image: redis:latest
+    container_name: identity-redis
+    ports:
+      - "6379:6379" # Exposed for local monitoring (e.g., RedisInsight)
+    command: redis-server --save 60 1 --loglevel warning
+    networks:
+      - identity-eco
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # ==========================================
+  # MICROSERVICE: AuthServer (Identity Provider)
+  # ==========================================
+  auth-server:
+    build:
+      context: ./
+      dockerfile: AuthServer/Dockerfile
+    container_name: auth-server
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      # Connection String for Postgres (Internal Docker DNS)
+      # Note the inclusion of "Include Error Detail=true" for debugging startup failures
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=identity_db;Username=postgres;Password=securepassword123!;Include Error Detail=true
+      # Connection String for Redis (Internal Docker DNS)
+      - ConnectionStrings__Redis=redis:6379,abortConnect=false,ssl=false
+      # Security & CORS Configuration placeholders
+      - Authentication__Google__ClientId=PLACEHOLDER_GOOGLE_ID
+      - Authentication__Google__ClientSecret=PLACEHOLDER_GOOGLE_SECRET
+      - Authentication__GitHub__ClientId=PLACEHOLDER_GITHUB_ID
+      - Authentication__GitHub__ClientSecret=PLACEHOLDER_GITHUB_SECRET
+    ports:
+      - "5001:8080" # Map host 5001 to container 8080
+    networks:
+      - identity-eco
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # ==========================================
+  # MICROSERVICE: WebApp (Client Application)
+  # ==========================================
+  web-app:
+    build:
+      context: ./
+      dockerfile: WebApp/Dockerfile
+    container_name: web-app
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      # Redis connection for Data Protection Key Ring sharing
+      - ConnectionStrings__Redis=redis:6379,abortConnect=false,ssl=false
+      # OIDC Authority Configuration
+      # CRITICAL: The browser needs to see localhost, but the backend needs to see the container name.
+      # In a real K8s ingress, these are the same domain. Locally, we must split them.
+      # Authority for Browser Redirects:
+      - OpenIdConnect__Authority=http://localhost:5001
+      # Authority for Backend Token Validation (Backchannel):
+      # Note: The container OIDC handler will attempt to contact this authority to fetch /.well-known/openid-configuration
+      - Authentication__MetadataAddress=http://auth-server:8080/.well-known/openid-configuration
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "5002:8080" # Map host 5002 to container 8080
+    networks:
+      - identity-eco
+    depends_on:
+      - auth-server
+      - redis
+
+  # ==========================================
+  # MICROSERVICE: ResourceApi (Protected API)
+  # ==========================================
+  resource-api:
+    build:
+      context: ./
+      dockerfile: ResourceApi/Dockerfile
+    container_name: resource-api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - Authentication__Authority=http://auth-server:8080
+    ports:
+      - "5003:8080"
+    networks:
+      - identity-eco
+    depends_on:
+      - auth-server
+
+volumes:
+  postgres_data:
+
+networks:
+  identity-eco:
+    driver: bridge
